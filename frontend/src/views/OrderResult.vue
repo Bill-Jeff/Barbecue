@@ -15,9 +15,9 @@
       <h2 class="result-title">下单成功</h2>
       <p class="result-desc">您的订单已提交<br>后厨正在备餐中</p>
       <div class="result-emoji">
-        <span style="animation-delay: 0.3s">🍖</span>
-        <span style="animation-delay: 0.5s">🔥</span>
-        <span style="animation-delay: 0.7s">😋</span>
+        <img class="result-food-img" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=120&h=120&fit=crop" style="animation-delay: 0.3s" />
+        <img class="result-food-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=120&h=120&fit=crop" style="animation-delay: 0.5s" />
+        <img class="result-food-img" src="https://images.unsplash.com/photo-1527477396000-e27163b4bbed?w=120&h=120&fit=crop" style="animation-delay: 0.7s" />
       </div>
       <button class="back-btn" @click="router.replace('/')">
         <span>继续点单</span>
@@ -134,15 +134,17 @@ const router = useRouter()
   line-height: 1.8;
 }
 .result-emoji {
-  font-size: 36px;
   margin-bottom: 40px;
-  letter-spacing: 12px;
   display: flex;
   justify-content: center;
-  gap: 4px;
+  gap: 12px;
 }
-.result-emoji span {
-  display: inline-block;
+.result-food-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   animation: bounce-in 0.5s ease-out both;
 }
 @keyframes bounce-in {

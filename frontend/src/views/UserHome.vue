@@ -32,7 +32,7 @@
         >
           <div class="thumb">
             <img v-if="item.image" :src="item.image" class="thumb-img" />
-            <span v-else>{{ item.emoji }}</span>
+            <img v-else :src="item.foodImage" class="thumb-img" />
           </div>
           <div>
             <h3>{{ item.name }}</h3>
@@ -88,7 +88,7 @@
           </div>
           <div class="order-items">
             <div class="order-item" v-for="item in order.items" :key="item.productId">
-              <span class="oi-emoji">{{ getEmoji(item.productName) }}</span>
+              <img class="oi-img" :src="getFoodImage(item.productName)" />
               <span class="oi-name">{{ item.productName }}</span>
               <span class="oi-qty">x{{ item.quantity }}</span>
               <span class="oi-price">¥{{ (item.price * item.quantity).toFixed(2) }}</span>
@@ -136,6 +136,22 @@ const emojiMap = {
   '烤馒头片': '🍞', '烤韭菜': '🥬', '烤茄子': '🍆',
   '啤酒': '🍺', '王老吉': '🧃', '酸梅汤': '🥤',
 }
+const imageMap = {
+  '羊肉串': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop',
+  '牛肉串': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+  '鸡翅': 'https://images.unsplash.com/photo-1527477396000-e27163b4bbed?w=200&h=200&fit=crop',
+  '五花肉': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop&q=80',
+  '烤腰子': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop&q=80',
+  '烤生蚝': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop',
+  '烤鱿鱼': 'https://images.unsplash.com/photo-1565680018093-ebb6505b4d59?w=200&h=200&fit=crop',
+  '烤大虾': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop&q=80',
+  '烤馒头片': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop',
+  '烤韭菜': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&h=200&fit=crop',
+  '烤茄子': 'https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=200&h=200&fit=crop',
+  '啤酒': 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=200&fit=crop',
+  '王老吉': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop',
+  '酸梅汤': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop&q=80',
+}
 const tagsMap = {
   '羊肉串': ['销量王', '推荐加辣'], '牛肉串': ['低脂感', '鲜嫩'],
   '鸡翅': ['招牌酱料', '现烤'], '五花肉': ['肥瘦相间', '经典'],
@@ -148,11 +164,13 @@ const tagsMap = {
 const unitMap = { '啤酒': '瓶', '王老吉': '罐', '酸梅汤': '杯' }
 
 function getEmoji(name) { return emojiMap[name] || '🔥' }
+function getFoodImage(name) { return imageMap[name] || imageMap['羊肉串'] }
 
 const enrichedProducts = computed(() =>
   products.value.map(p => ({
     ...p,
     emoji: emojiMap[p.name] || '🔥',
+    foodImage: imageMap[p.name] || imageMap['羊肉串'],
     tags: tagsMap[p.name] || ['推荐'],
     unit: unitMap[p.name] || '串',
   }))
@@ -202,7 +220,7 @@ onMounted(async () => {
 <style scoped>
 .user-home {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg);
   padding-bottom: 60px;
 }
 
@@ -227,13 +245,14 @@ onMounted(async () => {
   border: 0;
   padding: 10px 16px;
   border-radius: 999px;
-  background: rgba(255, 248, 239, 0.72);
+  background: var(--surface);
   color: var(--muted);
-  box-shadow: inset 0 0 0 1px rgba(105, 54, 28, 0.08);
+  box-shadow: inset 0 0 0 1px var(--line);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
+  backdrop-filter: blur(8px);
 }
 .chip.active {
   background: linear-gradient(135deg, var(--accent), #de7743);
@@ -252,17 +271,19 @@ onMounted(async () => {
   padding: 14px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: 0 12px 28px rgba(97, 51, 29, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
   animation: rise-in 0.5s ease both;
 }
 .thumb {
   display: grid;
   place-items: center;
   border-radius: var(--radius-md);
-  background: radial-gradient(circle at 35% 30%, rgba(255, 219, 171, 0.95), transparent 40%),
-    linear-gradient(180deg, #7b2d18, #492015);
+  background: rgba(255, 245, 230, 0.8);
   font-size: 40px;
-  box-shadow: inset 0 -10px 24px rgba(0,0,0,0.16);
+  box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 .thumb-img { width: 100%; height: 100%; object-fit: cover; }
@@ -271,7 +292,7 @@ onMounted(async () => {
 .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .tag {
   padding: 5px 8px; border-radius: 999px;
-  background: rgba(240, 176, 79, 0.15); color: var(--accent-deep);
+  background: var(--accent-soft); color: var(--accent);
   font-size: 11px; font-weight: 700;
 }
 .card-bottom {
@@ -305,23 +326,24 @@ onMounted(async () => {
   transform: translateX(-50%);
   width: min(calc(100% - 20px), 410px);
   padding: 14px; border-radius: 24px;
-  background: rgba(42, 20, 12, 0.94); color: #fff5ea;
-  box-shadow: 0 24px 48px rgba(40, 20, 12, 0.28);
-  backdrop-filter: blur(10px); z-index: 5;
+  background: rgba(255, 255, 255, 0.92); color: var(--text);
+  box-shadow: 0 24px 48px rgba(160, 100, 40, 0.12);
+  backdrop-filter: blur(16px); z-index: 5;
+  border: 1px solid var(--line);
   animation: float-up 0.9s ease-out both;
 }
 .cart-top, .cart-bottom {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
 }
-.cart-top small { color: rgba(255, 233, 214, 0.72); font-size: 12px; }
+.cart-top small { color: var(--muted); font-size: 12px; }
 .cart-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 28px; height: 28px; padding: 0 10px;
-  border-radius: 999px; background: rgba(255,255,255,0.12); font-weight: 700;
+  border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700;
 }
 .cart-bottom { margin-top: 12px; }
 .total strong { display: block; font-size: 24px; }
-.total span { color: rgba(255, 233, 214, 0.72); font-size: 12px; }
+.total span { color: var(--muted); font-size: 12px; }
 .checkout {
   border: 0; padding: 14px 20px; border-radius: 16px;
   background: linear-gradient(135deg, #f0b04f, #ff8848);
@@ -334,7 +356,10 @@ onMounted(async () => {
 .order-list { display: grid; gap: 12px; }
 .order-card {
   background: var(--surface); border-radius: var(--radius-lg);
-  overflow: hidden; box-shadow: 0 12px 28px rgba(97, 51, 29, 0.08);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .order-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -349,7 +374,7 @@ onMounted(async () => {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 0; font-size: 14px;
 }
-.oi-emoji { font-size: 20px; width: 28px; text-align: center; }
+.oi-img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
 .oi-name { flex: 1; font-weight: 600; }
 .oi-qty { color: var(--muted); font-size: 13px; }
 .oi-price { color: var(--accent-deep); font-weight: 700; min-width: 60px; text-align: right; }

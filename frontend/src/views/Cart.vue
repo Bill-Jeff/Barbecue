@@ -20,7 +20,7 @@
       <div v-else>
         <div class="cart-list">
           <div class="cart-item" v-for="item in cart.items" :key="item.productId">
-            <div class="cart-item__thumb">{{ getEmoji(item.name) }}</div>
+            <div class="cart-item__thumb"><img :src="getFoodImage(item.name)" class="cart-thumb-img" /></div>
             <div class="cart-item__info">
               <div class="cart-item__name">{{ item.name }}</div>
               <div class="cart-item__price">¥{{ item.price.toFixed(0) }}</div>
@@ -79,8 +79,25 @@ const emojiMap = {
   '烤馒头片': '🍞', '烤韭菜': '🥬', '烤茄子': '🍆',
   '啤酒': '🍺', '王老吉': '🧃', '酸梅汤': '🥤',
 }
+const imageMap = {
+  '羊肉串': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop',
+  '牛肉串': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+  '鸡翅': 'https://images.unsplash.com/photo-1527477396000-e27163b4bbed?w=200&h=200&fit=crop',
+  '五花肉': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop&q=80',
+  '烤腰子': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop&q=80',
+  '烤生蚝': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop',
+  '烤鱿鱼': 'https://images.unsplash.com/photo-1565680018093-ebb6505b4d59?w=200&h=200&fit=crop',
+  '烤大虾': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop&q=80',
+  '烤馒头片': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop',
+  '烤韭菜': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&h=200&fit=crop',
+  '烤茄子': 'https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=200&h=200&fit=crop',
+  '啤酒': 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=200&fit=crop',
+  '王老吉': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop',
+  '酸梅汤': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop&q=80',
+}
 
 function getEmoji(name) { return emojiMap[name] || '🔥' }
+function getFoodImage(name) { return imageMap[name] || imageMap['羊肉串'] }
 function removeAll(productId) { cart.items = cart.items.filter(i => i.productId !== productId) }
 
 async function submitOrder() {
@@ -117,6 +134,7 @@ async function submitOrder() {
 <style scoped>
 .cart-page {
   min-height: 100vh;
+  background: var(--bg);
 }
 
 .page {
@@ -186,6 +204,8 @@ async function submitOrder() {
 /* Cart list */
 .cart-list {
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--line);
@@ -204,12 +224,18 @@ async function submitOrder() {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(145deg, #f8f0e8, #f0e8de);
+  background: rgba(255, 245, 230, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.cart-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
 .cart-item__info { flex: 1; }
 .cart-item__name {
@@ -270,6 +296,8 @@ async function submitOrder() {
 /* Table input */
 .table-input {
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-lg);
   margin-top: 14px;
   padding: 16px 18px;
@@ -305,12 +333,13 @@ async function submitOrder() {
   left: 50%;
   transform: translateX(-50%);
   width: min(100%, 430px);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 16px 18px;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -8px 30px rgba(160, 100, 40, 0.08);
 }
 .summary-row {
   display: flex;

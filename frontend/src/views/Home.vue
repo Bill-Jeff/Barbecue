@@ -66,8 +66,8 @@
         >
           <div class="card-visual">
             <div class="thumb">
-              <img v-if="item.image" :src="item.image" class="thumb-img" />
-              <span v-else class="thumb-emoji">{{ item.emoji }}</span>
+              <img v-if="item.image || item.imageUrl" :src="item.image || item.imageUrl" class="thumb-img" />
+              <img v-else :src="item.foodImage" class="thumb-img" />
             </div>
             <div class="thumb-glow"></div>
           </div>
@@ -145,7 +145,7 @@
           </div>
           <div class="order-items">
             <div class="order-item" v-for="item in order.items" :key="item.productId">
-              <span class="oi-emoji">{{ getEmoji(item.productName) }}</span>
+              <img class="oi-img" :src="getFoodImage(item.productName)" />
               <span class="oi-name">{{ item.productName }}</span>
               <span class="oi-qty">×{{ item.quantity }}</span>
               <span class="oi-price">¥{{ (item.price * item.quantity).toFixed(2) }}</span>
@@ -263,6 +263,22 @@ const emojiMap = {
   '烤馒头片': '🍞', '烤韭菜': '🥬', '烤茄子': '🍆',
   '啤酒': '🍺', '王老吉': '🧃', '酸梅汤': '🥤',
 }
+const imageMap = {
+  '羊肉串': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop',
+  '牛肉串': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+  '鸡翅': 'https://images.unsplash.com/photo-1527477396000-e27163b4bbed?w=200&h=200&fit=crop',
+  '五花肉': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop&q=80',
+  '烤腰子': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop&q=80',
+  '烤生蚝': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop',
+  '烤鱿鱼': 'https://images.unsplash.com/photo-1565680018093-ebb6505b4d59?w=200&h=200&fit=crop',
+  '烤大虾': 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=200&h=200&fit=crop&q=80',
+  '烤馒头片': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop',
+  '烤韭菜': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&h=200&fit=crop',
+  '烤茄子': 'https://images.unsplash.com/photo-1518977956812-cd3dbadaaf31?w=200&h=200&fit=crop',
+  '啤酒': 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=200&fit=crop',
+  '王老吉': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop',
+  '酸梅汤': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop&q=80',
+}
 const tagsMap = {
   '羊肉串': ['销量王', '推荐加辣'], '牛肉串': ['低脂感', '鲜嫩'],
   '鸡翅': ['招牌酱料', '现烤'], '五花肉': ['肥瘦相间', '经典'],
@@ -276,12 +292,14 @@ const unitMap = { '啤酒': '瓶', '王老吉': '罐', '酸梅汤': '杯' }
 const catIconMap = { '烤串': '🍢', '海鲜': '🦪', '蔬菜': '🥬', '主食': '🍞', '酒水': '🍺' }
 
 function getEmoji(name) { return emojiMap[name] || '🔥' }
+function getFoodImage(name) { return imageMap[name] || imageMap['羊肉串'] }
 function getCatIcon(name) { return catIconMap[name] || '🔥' }
 
 const enrichedProducts = computed(() =>
   products.value.map(p => ({
     ...p,
     emoji: emojiMap[p.name] || '🔥',
+    foodImage: imageMap[p.name] || imageMap['羊肉串'],
     tags: tagsMap[p.name] || ['推荐'],
     unit: unitMap[p.name] || '串',
   }))
@@ -361,6 +379,8 @@ onMounted(async () => {
   padding: 28px 22px 24px;
   border-radius: var(--radius-xl);
   background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   animation: rise-in 0.7s ease-out both;
@@ -550,6 +570,8 @@ onMounted(async () => {
   padding: 14px;
   border-radius: var(--radius-lg);
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--line);
   animation: rise-in 0.5s ease both;
@@ -566,7 +588,7 @@ onMounted(async () => {
   width: 96px;
   height: 96px;
   border-radius: var(--radius-md);
-  background: linear-gradient(145deg, #f8f0e8, #f0e8de);
+  background: rgba(255, 245, 230, 0.8);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -712,12 +734,13 @@ onMounted(async () => {
   justify-content: space-between;
   padding: 12px 12px 12px 16px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--line);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04);
+    0 12px 40px rgba(160, 100, 40, 0.1),
+    0 2px 8px rgba(160, 100, 40, 0.04);
 }
 .cart-left {
   display: flex;
@@ -783,6 +806,8 @@ onMounted(async () => {
   padding: 16px;
   border-radius: var(--radius-lg);
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
 }
 .notice-icon {
@@ -804,6 +829,8 @@ onMounted(async () => {
 }
 .order-card {
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -845,7 +872,7 @@ onMounted(async () => {
   padding: 8px 0;
   font-size: 13px;
 }
-.oi-emoji { font-size: 18px; width: 24px; text-align: center; }
+.oi-img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
 .oi-name { flex: 1; font-weight: 500; color: var(--text); }
 .oi-qty { color: var(--muted-soft); font-size: 12px; }
 .oi-price { color: var(--accent-bright); font-weight: 700; min-width: 60px; text-align: right; }
@@ -894,6 +921,8 @@ onMounted(async () => {
   margin-bottom: 20px;
   border-radius: var(--radius-xl);
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
@@ -945,6 +974,8 @@ onMounted(async () => {
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
 }
 .menu-item {
@@ -1017,14 +1048,14 @@ onMounted(async () => {
   justify-content: space-around;
   padding: 8px 6px 10px;
   border-radius: 28px;
-  /* Frosted matte glass — light */
-  background: rgba(255, 255, 255, 0.88);
+  /* Frosted matte glass — warm */
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px) saturate(1.2);
   -webkit-backdrop-filter: blur(24px) saturate(1.2);
   border: 1px solid var(--line);
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.06),
-    0 2px 8px rgba(0, 0, 0, 0.03),
+    0 8px 30px rgba(160, 100, 40, 0.08),
+    0 2px 8px rgba(160, 100, 40, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   overflow: hidden;
 }
