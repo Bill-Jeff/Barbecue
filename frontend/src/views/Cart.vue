@@ -2,14 +2,18 @@
   <div class="cart-page">
     <div class="page">
       <div class="cart-header">
-        <button class="back-btn" @click="router.back()">←</button>
+        <button class="back-btn" @click="router.back()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
         <h2>购物车</h2>
-        <span class="item-count">{{ cart.totalCount }} 件商品</span>
+        <span class="item-count">{{ cart.totalCount }} 件</span>
       </div>
 
       <div v-if="cart.items.length === 0" class="empty-cart">
-        <div class="empty-icon">🛒</div>
-        <p>购物车空空如也~</p>
+        <div class="empty-icon">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <p>购物车空空如也</p>
         <button class="go-shop-btn" @click="router.replace('/')">去逛逛</button>
       </div>
 
@@ -22,23 +26,32 @@
               <div class="cart-item__price">¥{{ item.price.toFixed(0) }}</div>
             </div>
             <div class="stepper">
-              <button type="button" @click="cart.removeItem(item.productId)">-</button>
+              <button type="button" class="stepper-btn" @click="cart.removeItem(item.productId)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
               <strong>{{ item.quantity }}</strong>
-              <button type="button" class="plus" @click="cart.addItem({ id: item.productId, name: item.name, price: item.price })">+</button>
+              <button type="button" class="stepper-btn stepper-btn--plus" @click="cart.addItem({ id: item.productId, name: item.name, price: item.price })">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
             </div>
-            <button class="del-btn" @click="removeAll(item.productId)">✕</button>
+            <button class="del-btn" @click="removeAll(item.productId)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
         </div>
 
         <div class="table-input">
-          <div class="table-label">桌号</div>
+          <div class="table-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            桌号
+          </div>
           <input v-model="tableNo" type="number" placeholder="请输入桌号" class="table-field" />
         </div>
 
         <div class="order-summary">
           <div class="summary-row">
-            <span>共 {{ cart.totalCount }} 件</span>
-            <span class="summary-total">合计 <em>¥{{ cart.totalPrice.toFixed(0) }}</em></span>
+            <span class="summary-count">共 {{ cart.totalCount }} 件</span>
+            <span class="summary-total">¥<em>{{ cart.totalPrice.toFixed(0) }}</em></span>
           </div>
           <button class="submit-btn" :class="{ loading: submitting }" @click="submitOrder">
             {{ submitting ? '下单中...' : '确认下单' }}
@@ -74,12 +87,23 @@ async function submitOrder() {
   if (!tableNo.value) { alert('请输入桌号'); return }
   submitting.value = true
   try {
-    await createOrder({
+    const orderData = {
       tableNo: tableNo.value,
       items: cart.items.map(i => ({
         productId: i.productId, productName: i.name, price: i.price, quantity: i.quantity,
       })),
-    })
+    }
+    const res = await createOrder(orderData)
+    const localOrder = {
+      id: res.data.id || Date.now(),
+      tableNo: orderData.tableNo,
+      items: orderData.items,
+      total: cart.totalPrice,
+      time: new Date().toLocaleString('zh-CN'),
+    }
+    const orders = JSON.parse(localStorage.getItem('shaokao_orders') || '[]')
+    orders.unshift(localOrder)
+    localStorage.setItem('shaokao_orders', JSON.stringify(orders.slice(0, 50)))
     cart.clear()
     router.replace('/order-result')
   } catch {
@@ -100,174 +124,169 @@ async function submitOrder() {
   z-index: 1;
   width: min(100%, 430px);
   margin: 0 auto;
-  padding: 0 16px 140px;
+  padding: 0 16px 160px;
 }
 
 .cart-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 40px 0 20px;
+  gap: 14px;
+  padding: 44px 0 24px;
 }
-
 .cart-header h2 {
   margin: 0;
   font-size: 20px;
   flex: 1;
-  font-weight: 800;
+  font-weight: 900;
+  color: var(--text-bright);
 }
-
 .back-btn {
   background: var(--surface);
-  border: none;
-  width: 36px;
-  height: 36px;
+  border: 1px solid var(--line);
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  font-size: 18px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(94, 44, 20, 0.1);
   color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
 }
-
+.back-btn:active { transform: scale(0.9); background: var(--surface-raised); }
 .item-count {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--muted-soft);
 }
 
+/* Empty */
 .empty-cart {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 80px 0;
 }
-
-.empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.4; }
-.empty-cart p { color: var(--muted); font-size: 15px; }
-
+.empty-icon { margin-bottom: 20px; color: var(--muted-soft); }
+.empty-cart p { color: var(--muted-soft); font-size: 14px; }
 .go-shop-btn {
-  margin-top: 16px;
-  background: linear-gradient(135deg, var(--accent), #de7743);
+  margin-top: 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
   color: #fff;
   border: none;
-  padding: 12px 36px;
+  padding: 12px 40px;
   border-radius: 999px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 18px rgba(201, 79, 45, 0.22);
+  box-shadow: 0 10px 28px rgba(232, 98, 44, 0.3);
+  transition: transform 0.15s;
 }
+.go-shop-btn:active { transform: scale(0.95); }
 
+/* Cart list */
 .cart-list {
   background: var(--surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 12px 28px rgba(97, 51, 29, 0.08);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
 }
-
 .cart-item {
   display: flex;
   align-items: center;
-  padding: 14px 14px;
+  padding: 14px;
   border-bottom: 1px solid var(--line);
   gap: 12px;
 }
-
 .cart-item:last-child { border-bottom: none; }
 
 .cart-item__thumb {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-sm);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 219, 171, 0.95), transparent 40%),
-    linear-gradient(180deg, #7b2d18, #492015);
+  background: linear-gradient(145deg, #f8f0e8, #f0e8de);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   flex-shrink: 0;
-  box-shadow: inset 0 -6px 14px rgba(0,0,0,0.12);
 }
-
 .cart-item__info { flex: 1; }
-
 .cart-item__name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-bright);
 }
-
 .cart-item__price {
   font-size: 16px;
-  color: var(--accent-deep);
-  font-weight: 700;
+  color: var(--accent-bright);
+  font-weight: 800;
   margin-top: 4px;
 }
 
 .stepper {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(125, 73, 39, 0.08);
+  gap: 6px;
 }
-
-.stepper button {
-  width: 28px;
-  height: 28px;
+.stepper-btn {
+  width: 26px;
+  height: 26px;
   border: 0;
   border-radius: 50%;
-  font-size: 16px;
-  background: #f4e2d3;
-  color: var(--accent-deep);
+  background: var(--surface-glass);
+  color: var(--muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--line-bright);
+  transition: all 0.15s;
 }
-
-.stepper button.plus {
-  background: linear-gradient(135deg, var(--accent), #e97b46);
+.stepper-btn--plus {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
   color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(232, 98, 44, 0.3);
 }
-
+.stepper-btn:active { transform: scale(0.85); }
 .stepper strong {
-  width: 20px;
+  width: 18px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--text-bright);
 }
 
 .del-btn {
   background: none;
   border: none;
-  color: rgba(126, 95, 77, 0.3);
-  font-size: 16px;
+  color: var(--muted-soft);
   cursor: pointer;
   padding: 4px;
+  transition: color 0.15s;
 }
+.del-btn:active { color: var(--ember); }
 
-.del-btn:hover { color: var(--accent); }
-
+/* Table input */
 .table-input {
   background: var(--surface);
   border-radius: var(--radius-lg);
   margin-top: 14px;
-  padding: 16px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 12px 28px rgba(97, 51, 29, 0.08);
+  border: 1px solid var(--line);
 }
-
 .table-label {
-  font-size: 15px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
 }
-
 .table-field {
   flex: 1;
   border: none;
@@ -275,53 +294,60 @@ async function submitOrder() {
   font-size: 15px;
   text-align: right;
   background: transparent;
-  color: var(--text);
+  color: var(--text-bright);
 }
+.table-field::placeholder { color: var(--muted-soft); }
 
+/* Order summary */
 .order-summary {
   position: fixed;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: min(100%, 430px);
-  background: rgba(42, 20, 12, 0.94);
-  backdrop-filter: blur(10px);
-  padding: 14px 16px;
-  padding-bottom: max(14px, env(safe-area-inset-bottom));
-  border-radius: 24px 24px 0 0;
-  color: #fff5ea;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  padding: 16px 18px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.06);
 }
-
 .summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: rgba(255, 233, 214, 0.72);
+  margin-bottom: 14px;
 }
-
+.summary-count {
+  font-size: 13px;
+  color: var(--muted);
+}
+.summary-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
 .summary-total em {
   font-style: normal;
-  font-size: 24px;
-  font-weight: 800;
-  color: #fff5ea;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--accent);
+  margin-left: 2px;
 }
-
 .submit-btn {
   width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, #f0b04f, #ff8848);
-  color: #35180c;
+  height: 50px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: #fff;
   border: none;
   border-radius: 16px;
   font-size: 16px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 12px 20px rgba(255, 166, 84, 0.28);
+  box-shadow: 0 12px 32px rgba(232, 98, 44, 0.3);
   transition: transform 0.15s;
+  letter-spacing: 0.05em;
 }
-
 .submit-btn:active { transform: scale(0.97); }
 .submit-btn.loading { opacity: 0.7; }
 </style>

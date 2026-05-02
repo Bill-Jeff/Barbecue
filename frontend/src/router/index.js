@@ -6,6 +6,12 @@ const routes = [
   { path: '/order-result', name: 'OrderResult', component: () => import('../views/OrderResult.vue') },
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue') },
   {
+    path: '/user',
+    name: 'UserHome',
+    component: () => import('../views/UserHome.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/admin',
     name: 'Admin',
     component: () => import('../views/Admin.vue'),

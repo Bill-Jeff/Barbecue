@@ -1,103 +1,223 @@
 <template>
-  <div class="page">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-bg"></div>
-      <button class="admin-entry" @click="router.push('/m-admin')">⚙ 管理</button>
-      <div class="eyebrow">炭火现烤 · 夜宵优选</div>
-      <h1>今晚吃点<br>热辣烧烤</h1>
-      <p>手机上就能轻松点单，肉串、海鲜、蔬菜和主食一页搞定，支持现点现烤与口味备注。</p>
-      <div class="hero-meta">
-        <div class="hero-stat">
-          <strong>18 min</strong>
-          <span>平均出餐</span>
+  <div class="home">
+    <!-- ===== 菜单 Tab ===== -->
+    <div v-show="activeTab === 0" class="page">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-embers">
+          <span v-for="n in 6" :key="n" class="ember-dot" :style="emberStyle(n)"></span>
         </div>
-        <div class="hero-stat">
-          <strong>4.9 分</strong>
-          <span>人气好评</span>
-        </div>
-        <div class="hero-stat">
-          <strong>¥ 20 起送</strong>
-          <span>深夜可点</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 分类 -->
-    <div class="section-title">
-      <h2>招牌分类</h2>
-      <span>左右滑动切换</span>
-    </div>
-    <div class="chips">
-      <button
-        v-for="cat in categories"
-        :key="cat.id"
-        class="chip"
-        :class="{ active: activeCategory === cat.id }"
-        @click="activeCategory = cat.id"
-      >{{ cat.name }}</button>
-    </div>
-
-    <!-- 菜品列表 -->
-    <div class="section-title">
-      <h2>{{ currentCategoryName }}</h2>
-      <span>新鲜现串，辣度可调</span>
-    </div>
-    <section class="menu-list">
-      <article
-        v-for="(item, index) in filteredProducts"
-        :key="item.id"
-        class="card"
-        :style="{ animationDelay: index * 60 + 'ms' }"
-      >
-        <div class="thumb">{{ item.emoji }}</div>
-        <div>
-          <h3>{{ item.name }}</h3>
-          <p class="desc">{{ item.description }}</p>
-          <div class="tags">
-            <span class="tag" v-for="tag in item.tags" :key="tag">{{ tag }}</span>
+        <button class="admin-entry" @click="router.push('/m-admin')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <div class="hero-badge">炭火现烤 · 夜宵优选</div>
+        <h1 class="hero-title">今晚吃点<br><span class="accent">热辣烧烤</span></h1>
+        <p class="hero-desc">手机轻松点单，肉串海鲜蔬菜一页搞定，支持现点现烤与口味备注。</p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="stat-num">18</span>
+            <span class="stat-unit">min</span>
+            <span class="stat-label">平均出餐</span>
           </div>
-          <div class="card-bottom">
-            <div class="price">
-              <strong>¥{{ item.price.toFixed(0) }}</strong>
-              <span>{{ item.unit }} / 份量足</span>
-            </div>
-            <div class="stepper">
-              <button type="button" v-if="getQty(item.id) > 0" @click="cart.removeItem(item.id)">-</button>
-              <strong v-if="getQty(item.id) > 0">{{ getQty(item.id) }}</strong>
-              <button type="button" class="plus" @click="cart.addItem(item)">+</button>
-            </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-num">4.9</span>
+            <span class="stat-unit">分</span>
+            <span class="stat-label">人气好评</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-num">¥20</span>
+            <span class="stat-unit">起</span>
+            <span class="stat-label">深夜可点</span>
           </div>
         </div>
-      </article>
-    </section>
+      </section>
 
-    <section class="notice">
-      温馨提示：默认微辣微孜然，如需"免辣 / 加辣 / 不要香菜 / 单独打包"，下单时可备注。
-    </section>
+      <!-- 分类 -->
+      <div class="section-title">
+        <h2>招牌分类</h2>
+        <span class="section-hint">左右滑动</span>
+      </div>
+      <div class="chips">
+        <button
+          v-for="cat in categories"
+          :key="cat.id"
+          class="chip"
+          :class="{ active: activeCategory === cat.id }"
+          @click="activeCategory = cat.id"
+        >
+          <span class="chip-icon">{{ getCatIcon(cat.name) }}</span>
+          {{ cat.name }}
+        </button>
+      </div>
 
-    <!-- 购物车悬浮栏 -->
-    <aside class="cart" v-if="cart.totalCount > 0">
-      <div class="cart-top">
-        <div>
-          <strong>已选烧烤</strong><br>
-          <small>{{ cartSummary }}</small>
-        </div>
-        <div class="cart-count">{{ cart.totalCount }} 串</div>
+      <!-- 菜品列表 -->
+      <div class="section-title">
+        <h2>{{ currentCategoryName }}</h2>
+        <span class="section-hint">新鲜现串，辣度可调</span>
       </div>
-      <div class="cart-bottom">
-        <div class="total">
-          <strong>¥{{ cart.totalPrice.toFixed(0) }}</strong>
-          <span>配送费另计，支持到店自取</span>
+      <section class="menu-list">
+        <article
+          v-for="(item, index) in filteredProducts"
+          :key="item.id"
+          class="card"
+          :style="{ animationDelay: index * 80 + 'ms' }"
+        >
+          <div class="card-visual">
+            <div class="thumb">
+              <img v-if="item.image" :src="item.image" class="thumb-img" />
+              <span v-else class="thumb-emoji">{{ item.emoji }}</span>
+            </div>
+            <div class="thumb-glow"></div>
+          </div>
+          <div class="card-body">
+            <div class="card-header">
+              <h3>{{ item.name }}</h3>
+              <span class="card-price">¥{{ item.price.toFixed(0) }}</span>
+            </div>
+            <p class="desc">{{ item.description }}</p>
+            <div class="tags">
+              <span class="tag" v-for="tag in item.tags" :key="tag">{{ tag }}</span>
+            </div>
+            <div class="card-bottom">
+              <span class="unit-label">{{ item.unit }} / 份量足</span>
+              <div class="stepper">
+                <button type="button" v-if="getQty(item.id) > 0" class="stepper-minus" @click="cart.removeItem(item.id)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <strong v-if="getQty(item.id) > 0" class="stepper-count">{{ getQty(item.id) }}</strong>
+                <button type="button" class="stepper-plus" @click="cart.addItem(item)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="notice">
+        <div class="notice-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         </div>
-        <button class="checkout" @click="goCart">提交订单</button>
+        <p>默认微辣微孜然，如需"免辣 / 加辣 / 不要香菜 / 单独打包"，下单时备注即可。</p>
+      </section>
+
+      <!-- 购物车悬浮栏 -->
+      <aside class="cart-bar" v-if="cart.totalCount > 0">
+        <div class="cart-bar-inner">
+          <div class="cart-left">
+            <div class="cart-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <span class="cart-badge">{{ cart.totalCount }}</span>
+            </div>
+            <div class="cart-info">
+              <strong>¥{{ cart.totalPrice.toFixed(0) }}</strong>
+              <small>{{ cartSummary }}</small>
+            </div>
+          </div>
+          <button class="checkout-btn" @click="router.push('/cart')">去结算</button>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ===== 点单记录 Tab ===== -->
+    <div v-show="activeTab === 1" class="page">
+      <div class="section-title">
+        <h2>点单记录</h2>
+        <span class="section-hint">{{ orders.length }} 笔订单</span>
       </div>
-    </aside>
+      <div v-if="orders.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <p>暂无点单记录</p>
+        <button class="empty-action" @click="activeTab = 0">去点单</button>
+      </div>
+      <div v-else class="order-list">
+        <div class="order-card" v-for="order in orders" :key="order.id">
+          <div class="order-header">
+            <div class="order-meta">
+              <span class="order-time">{{ order.time }}</span>
+              <span class="order-table">桌号 {{ order.tableNo }}</span>
+            </div>
+            <span class="order-total">¥{{ order.total.toFixed(2) }}</span>
+          </div>
+          <div class="order-items">
+            <div class="order-item" v-for="item in order.items" :key="item.productId">
+              <span class="oi-emoji">{{ getEmoji(item.productName) }}</span>
+              <span class="oi-name">{{ item.productName }}</span>
+              <span class="oi-qty">×{{ item.quantity }}</span>
+              <span class="oi-price">¥{{ (item.price * item.quantity).toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 我的 Tab ===== -->
+    <div v-show="activeTab === 2" class="page">
+      <div class="profile-section">
+        <div class="profile-card">
+          <div class="profile-avatar">{{ isLoggedIn ? (nickname?.charAt(0) || 'U') : '?' }}</div>
+          <div class="profile-info">
+            <div class="profile-name">{{ isLoggedIn ? (nickname || '用户') : '未登录' }}</div>
+            <div class="profile-role" v-if="isLoggedIn">
+              <span class="role-tag" :class="role === 'admin' ? 'role-admin' : 'role-user'">
+                {{ role === 'admin' ? '管理员' : '用户' }}
+              </span>
+            </div>
+            <div class="profile-hint" v-else>登录后可查看点单记录</div>
+          </div>
+        </div>
+
+        <div class="profile-menu" v-if="isLoggedIn">
+          <button class="menu-item" @click="activeTab = 1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>点单记录</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="menu-item" @click="router.push('/m-admin')" v-if="role === 'admin'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>管理后台</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="menu-item menu-item--danger" @click="logout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>退出登录</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <div v-else class="login-prompt">
+          <button class="login-btn" @click="router.push('/login')">去登录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liquid Glass Dock -->
+    <nav class="dock">
+      <div class="dock-track">
+        <div class="dock-indicator" :style="{ transform: `translateX(${activeTab * 100}%)` }"></div>
+        <button
+          v-for="(item, i) in dockItems"
+          :key="i"
+          class="dock-item"
+          :class="{ active: activeTab === i }"
+          @click="activeTab = i"
+        >
+          <div class="dock-icon">
+            <component :is="item.icon" />
+          </div>
+          <span class="dock-label">{{ item.label }}</span>
+        </button>
+      </div>
+    </nav>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCategories, getProducts } from '../api'
 import { useCartStore } from '../stores/cart'
@@ -105,9 +225,37 @@ import { useCartStore } from '../stores/cart'
 const router = useRouter()
 const cart = useCartStore()
 
+const activeTab = ref(0)
 const activeCategory = ref(null)
+
+// Dock icons as render functions
+const MenuIcon = () => h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
+  h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
+  h('polyline', { points: '9 22 9 12 15 12 15 22' }),
+])
+const OrderIcon = () => h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
+  h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }),
+  h('polyline', { points: '14 2 14 8 20 8' }),
+  h('line', { x1: '16', y1: '13', x2: '8', y2: '13' }),
+  h('line', { x1: '16', y1: '17', x2: '8', y2: '17' }),
+])
+const UserIcon = () => h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
+  h('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }),
+  h('circle', { cx: '12', cy: '7', r: '4' }),
+])
+
+const dockItems = [
+  { label: '菜单', icon: MenuIcon },
+  { label: '记录', icon: OrderIcon },
+  { label: '我的', icon: UserIcon },
+]
 const categories = ref([])
 const products = ref([])
+const orders = ref([])
+
+const isLoggedIn = computed(() => !!localStorage.getItem('token'))
+const nickname = computed(() => localStorage.getItem('nickname') || '')
+const role = computed(() => localStorage.getItem('role') || '')
 
 const emojiMap = {
   '羊肉串': '🍢', '牛肉串': '🥩', '鸡翅': '🍗', '五花肉': '🥓',
@@ -115,7 +263,6 @@ const emojiMap = {
   '烤馒头片': '🍞', '烤韭菜': '🥬', '烤茄子': '🍆',
   '啤酒': '🍺', '王老吉': '🧃', '酸梅汤': '🥤',
 }
-
 const tagsMap = {
   '羊肉串': ['销量王', '推荐加辣'], '牛肉串': ['低脂感', '鲜嫩'],
   '鸡翅': ['招牌酱料', '现烤'], '五花肉': ['肥瘦相间', '经典'],
@@ -125,10 +272,11 @@ const tagsMap = {
   '烤茄子': ['蒜香爆棚', '经典'], '啤酒': ['冰镇', '必搭'],
   '王老吉': ['降火', '冰爽'], '酸梅汤': ['自制', '解渴'],
 }
+const unitMap = { '啤酒': '瓶', '王老吉': '罐', '酸梅汤': '杯' }
+const catIconMap = { '烤串': '🍢', '海鲜': '🦪', '蔬菜': '🥬', '主食': '🍞', '酒水': '🍺' }
 
-const unitMap = {
-  '啤酒': '瓶', '王老吉': '罐', '酸梅汤': '杯',
-}
+function getEmoji(name) { return emojiMap[name] || '🔥' }
+function getCatIcon(name) { return catIconMap[name] || '🔥' }
 
 const enrichedProducts = computed(() =>
   products.value.map(p => ({
@@ -138,16 +286,13 @@ const enrichedProducts = computed(() =>
     unit: unitMap[p.name] || '串',
   }))
 )
-
 const filteredProducts = computed(() =>
   enrichedProducts.value.filter(p => p.categoryId === activeCategory.value)
 )
-
 const currentCategoryName = computed(() => {
   const cat = categories.value.find(c => c.id === activeCategory.value)
   return cat ? cat.name : '推荐菜品'
 })
-
 const cartSummary = computed(() => {
   if (cart.items.length === 0) return '先挑几串喜欢的吧'
   const names = cart.items.slice(0, 3).map(i => `${i.name} x${i.quantity}`).join('、')
@@ -159,148 +304,206 @@ function getQty(productId) {
   return item ? item.quantity : 0
 }
 
-function goCart() {
-  router.push('/cart')
+function loadOrders() {
+  try { orders.value = JSON.parse(localStorage.getItem('shaokao_orders') || '[]') }
+  catch { orders.value = [] }
+}
+
+function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('role')
+  localStorage.removeItem('nickname')
+  activeTab.value = 0
+}
+
+function emberStyle(n) {
+  const x = 15 + Math.random() * 70
+  const delay = n * 0.8 + Math.random() * 2
+  const dur = 3 + Math.random() * 3
+  const size = 2 + Math.random() * 3
+  return {
+    left: x + '%',
+    bottom: '10%',
+    width: size + 'px',
+    height: size + 'px',
+    animationDelay: delay + 's',
+    animationDuration: dur + 's',
+  }
 }
 
 onMounted(async () => {
   const [catRes, prodRes] = await Promise.all([getCategories(), getProducts()])
   categories.value = catRes.data
   products.value = prodRes.data.list
-  if (categories.value.length > 0) {
-    activeCategory.value = categories.value[0].id
-  }
+  if (categories.value.length > 0) activeCategory.value = categories.value[0].id
+  loadOrders()
 })
 </script>
 
 <style scoped>
+.home {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
 .page {
   position: relative;
   z-index: 1;
   width: min(100%, 430px);
   margin: 0 auto;
-  padding: 18px 16px calc(120px + env(safe-area-inset-bottom));
+  padding: 16px 16px 20px;
 }
 
-/* Hero */
+/* ===== Hero ===== */
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 22px 20px 20px;
+  padding: 28px 22px 24px;
   border-radius: var(--radius-xl);
-  color: #fff5ea;
-  background:
-    linear-gradient(135deg, rgba(47, 20, 8, 0.94), rgba(119, 40, 16, 0.92)),
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  background: var(--surface);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  animation: rise-in 0.8s ease-out both;
+  animation: rise-in 0.7s ease-out both;
 }
-
-.hero::after {
+.hero::before {
   content: "";
   position: absolute;
-  right: -18px;
-  top: -28px;
-  width: 140px;
-  height: 140px;
-  background: radial-gradient(circle, rgba(255, 179, 90, 0.55) 0%, rgba(255, 179, 90, 0) 68%);
-  transform: rotate(18deg);
+  inset: 0;
+  background: radial-gradient(circle at 90% 10%, rgba(232, 98, 44, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ember-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 6px var(--ember), 0 0 12px rgba(255, 78, 32, 0.5);
+  animation: smoke-drift 4s ease-out infinite;
+  opacity: 0;
 }
 
 .admin-entry {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 16px;
+  right: 16px;
   z-index: 2;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 236, 212, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 239, 224, 0.75);
-  font-size: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-glass);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(4px);
   transition: all 0.2s;
 }
-
 .admin-entry:active {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(0.95);
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(0.92);
 }
 
-.eyebrow {
+.hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
-  border: 1px solid rgba(255, 236, 212, 0.16);
+  padding: 6px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  border: 1px solid rgba(232, 98, 44, 0.25);
+  background: rgba(232, 98, 44, 0.1);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-bright);
+  font-weight: 500;
 }
 
-.hero h1 {
-  margin: 14px 0 10px;
+.hero-title {
+  margin: 16px 0 12px;
   font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 1.08;
-  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--text-bright);
+}
+.hero-title .accent {
+  background: linear-gradient(135deg, var(--accent-bright), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.hero p {
+.hero-desc {
   margin: 0;
   max-width: 260px;
-  color: rgba(255, 239, 224, 0.82);
-  font-size: 14px;
-  line-height: 1.6;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
 }
 
-.hero-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 18px;
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
 }
-
 .hero-stat {
-  padding: 12px 10px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
-
-.hero-stat strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 16px;
+.stat-num {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-bright);
+  line-height: 1;
 }
-
-.hero-stat span {
+.stat-unit {
   font-size: 11px;
-  color: rgba(255, 240, 225, 0.78);
+  color: var(--muted-soft);
+  margin-left: 2px;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--muted-soft);
+  margin-top: 4px;
+}
+.stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--line);
 }
 
-/* Section title */
+/* ===== Section title ===== */
 .section-title {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  margin: 22px 4px 12px;
+  align-items: center;
+  margin: 24px 2px 12px;
 }
-
 .section-title h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-bright);
+  letter-spacing: 0.02em;
 }
-
-.section-title span {
-  color: var(--muted);
+.section-hint {
+  color: var(--muted-soft);
   font-size: 12px;
 }
 
-/* Chips */
+/* ===== Chips ===== */
 .chips {
   display: flex;
   gap: 10px;
@@ -308,244 +511,576 @@ onMounted(async () => {
   padding: 4px 2px;
   scrollbar-width: none;
 }
+.chips::-webkit-scrollbar { display: none; }
 
 .chip {
   flex: 0 0 auto;
   border: 0;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-radius: 999px;
-  background: rgba(255, 248, 239, 0.72);
+  background: var(--surface);
   color: var(--muted);
-  box-shadow: inset 0 0 0 1px rgba(105, 54, 28, 0.08);
-  font-size: 14px;
-  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-
+.chip-icon { font-size: 15px; }
 .chip.active {
-  background: linear-gradient(135deg, var(--accent), #de7743);
-  color: #fffaf3;
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(232, 98, 44, 0.3);
   transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(201, 79, 45, 0.22);
 }
 
-/* Menu */
+/* ===== Menu cards ===== */
 .menu-list {
   display: grid;
   gap: 14px;
   margin-top: 14px;
 }
-
 .card {
   display: grid;
-  grid-template-columns: 88px 1fr;
+  grid-template-columns: 96px 1fr;
   gap: 14px;
   padding: 14px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: 0 12px 28px rgba(97, 51, 29, 0.08);
-  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
   animation: rise-in 0.5s ease both;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:active {
+  transform: scale(0.985);
 }
 
+.card-visual {
+  position: relative;
+}
 .thumb {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, #f8f0e8, #f0e8de);
   display: grid;
   place-items: center;
-  border-radius: var(--radius-md);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 219, 171, 0.95), transparent 40%),
-    linear-gradient(180deg, #7b2d18, #492015);
-  font-size: 40px;
-  box-shadow: inset 0 -10px 24px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+  box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.04);
+}
+.thumb-emoji {
+  font-size: 42px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumb-glow {
+  position: absolute;
+  bottom: -4px;
+  left: 20%;
+  right: 20%;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(232, 98, 44, 0.2);
+  filter: blur(6px);
 }
 
-.card h3 {
-  margin: 2px 0 6px;
-  font-size: 17px;
+.card-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
-
-.desc {
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.card-header h3 {
   margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-bright);
+  line-height: 1.3;
+}
+.card-price {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--accent-bright);
+  line-height: 1;
+  white-space: nowrap;
+}
+.desc {
+  margin: 6px 0 0;
   color: var(--muted);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin-top: 10px;
 }
-
 .tag {
-  padding: 5px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(240, 176, 79, 0.15);
-  color: var(--accent-deep);
+  background: var(--accent-soft);
+  color: var(--accent-bright);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
+  border: 1px solid rgba(232, 98, 44, 0.15);
 }
 
 .card-bottom {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  margin-top: 14px;
-  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.unit-label {
+  font-size: 11px;
+  color: var(--muted-soft);
 }
 
-.price {
+/* Stepper */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.stepper-minus,
+.stepper-plus {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.stepper-minus {
+  background: var(--surface-glass);
+  color: var(--muted);
+  border: 1px solid var(--line-bright);
+}
+.stepper-plus {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(232, 98, 44, 0.35);
+}
+.stepper-minus:active,
+.stepper-plus:active {
+  transform: scale(0.88);
+}
+.stepper-count {
+  width: 20px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-bright);
+}
+
+/* ===== Cart bar ===== */
+.cart-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 410px);
+  z-index: 10;
+  animation: float-up 0.6s ease-out both;
+}
+.cart-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.cart-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cart-icon-wrap {
+  position: relative;
+  color: var(--accent-bright);
+}
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 8px rgba(255, 78, 32, 0.5);
+}
+.cart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cart-info strong {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-bright);
+}
+.cart-info small {
+  font-size: 11px;
+  color: var(--muted-soft);
+}
+.checkout-btn {
+  border: 0;
+  padding: 12px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(232, 98, 44, 0.3);
+  transition: transform 0.15s;
+}
+.checkout-btn:active {
+  transform: scale(0.94);
+}
+
+/* ===== Notice ===== */
+.notice {
+  display: flex;
+  gap: 12px;
+  margin: 20px 2px 0;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.notice-icon {
+  flex-shrink: 0;
+  color: var(--gold);
+  margin-top: 1px;
+}
+.notice p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* ===== Order history ===== */
+.order-list {
+  display: grid;
+  gap: 12px;
+}
+.order-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  animation: rise-in 0.4s ease both;
+}
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.order-meta {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-
-.price strong {
-  font-size: 22px;
-  line-height: 1;
-  color: var(--accent-deep);
+.order-time {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
 }
-
-.price span {
+.order-table {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--muted-soft);
 }
-
-.stepper {
-  display: inline-flex;
+.order-total {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--accent-bright);
+}
+.order-items {
+  padding: 6px 16px 10px;
+}
+.order-item {
+  display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.oi-emoji { font-size: 18px; width: 24px; text-align: center; }
+.oi-name { flex: 1; font-weight: 500; color: var(--text); }
+.oi-qty { color: var(--muted-soft); font-size: 12px; }
+.oi-price { color: var(--accent-bright); font-weight: 700; min-width: 60px; text-align: right; }
+
+/* ===== Empty state ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+}
+.empty-icon {
+  margin-bottom: 16px;
+  color: var(--muted-soft);
+}
+.empty-state p {
+  color: var(--muted-soft);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.empty-action {
+  padding: 10px 32px;
   border-radius: 999px;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(125, 73, 39, 0.08);
+  border: 1px solid var(--line-bright);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.empty-action:active {
+  transform: scale(0.95);
+  background: var(--surface-raised);
 }
 
-.stepper button {
-  width: 32px;
-  height: 32px;
-  border: 0;
+/* ===== Profile ===== */
+.profile-section {
+  padding-top: 10px;
+}
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 22px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.profile-avatar {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  font-size: 18px;
-  line-height: 1;
-  background: #f4e2d3;
-  color: var(--accent-deep);
-  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.stepper button.plus {
-  background: linear-gradient(135deg, var(--accent), #e97b46);
+  font-size: 24px;
+  font-weight: 800;
   color: #fff;
-  box-shadow: 0 6px 14px rgba(201, 79, 45, 0.25);
+  box-shadow: 0 4px 16px rgba(232, 98, 44, 0.3);
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+.profile-hint {
+  font-size: 12px;
+  color: var(--muted-soft);
+}
+.role-tag {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.role-admin {
+  background: rgba(255, 78, 32, 0.15);
+  color: var(--ember);
+  border: 1px solid rgba(255, 78, 32, 0.2);
+}
+.role-user {
+  background: rgba(76, 175, 80, 0.12);
+  color: #66bb6a;
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
-.stepper button:active {
-  transform: scale(0.92);
+/* Profile menu */
+.profile-menu {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+  text-align: left;
+}
+.menu-item:last-child { border-bottom: 0; }
+.menu-item:active { background: var(--surface-glass); }
+.menu-item span { flex: 1; }
+.menu-item .arrow { color: var(--muted-soft); }
+.menu-item--danger { color: #ef5350; }
 
-.stepper strong {
-  width: 22px;
+/* Login prompt */
+.login-prompt {
   text-align: center;
-  font-size: 16px;
+  padding: 60px 20px;
+}
+.login-btn {
+  padding: 14px 48px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(232, 98, 44, 0.3);
+  transition: transform 0.15s;
+}
+.login-btn:active { transform: scale(0.95); }
+
+@media (max-width: 380px) {
+  .hero-title { font-size: 30px; }
+  .card { grid-template-columns: 1fr; }
+  .thumb { height: 120px; width: 100%; }
+  .hero-stats { gap: 0; }
 }
 
-/* Cart */
-.cart {
+/* ===== Liquid Glass Dock ===== */
+.dock {
   position: fixed;
   left: 50%;
   bottom: 12px;
   transform: translateX(-50%);
-  width: min(calc(100% - 20px), 410px);
-  padding: 14px;
-  border-radius: 24px;
-  background: rgba(42, 20, 12, 0.94);
-  color: #fff5ea;
-  box-shadow: 0 24px 48px rgba(40, 20, 12, 0.28);
-  backdrop-filter: blur(10px);
-  z-index: 5;
-  animation: float-up 0.9s ease-out both;
+  z-index: 100;
+  width: min(calc(100% - 32px), 320px);
+  animation: dock-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes dock-rise {
+  from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-.cart-top,
-.cart-bottom {
+.dock-track {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  justify-content: space-around;
+  padding: 8px 6px 10px;
+  border-radius: 28px;
+  /* Frosted matte glass — light */
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  overflow: hidden;
 }
 
-.cart-top small {
-  color: rgba(255, 233, 214, 0.72);
-  font-size: 12px;
+/* Active indicator pill */
+.dock-indicator {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(33.333% - 3px);
+  height: calc(100% - 12px);
+  border-radius: 22px;
+  background: rgba(232, 98, 44, 0.08);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
 }
 
-.cart-count {
-  display: inline-flex;
+.dock-item {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dock-icon {
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
+  width: 28px;
   height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  font-weight: 700;
-}
-
-.cart-bottom {
-  margin-top: 12px;
-}
-
-.total strong {
-  display: block;
-  font-size: 24px;
-  letter-spacing: 0.01em;
-}
-
-.total span {
-  color: rgba(255, 233, 214, 0.72);
-  font-size: 12px;
-}
-
-.checkout {
-  border: 0;
-  padding: 14px 20px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f0b04f, #ff8848);
-  color: #35180c;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 12px 20px rgba(255, 166, 84, 0.28);
-  transition: transform 0.15s;
-}
-
-.checkout:active {
-  transform: scale(0.95);
-}
-
-/* Notice */
-.notice {
-  margin: 18px 2px 0;
-  padding: 16px 18px;
-  border-radius: var(--radius-lg);
-  background: rgba(255, 246, 236, 0.78);
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-  box-shadow: inset 0 0 0 1px rgba(122, 73, 38, 0.08);
+  transition: color 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@media (max-width: 380px) {
-  .hero h1 { font-size: 30px; }
-  .hero-meta { grid-template-columns: 1fr; }
-  .card { grid-template-columns: 1fr; }
-  .thumb { height: 86px; }
-  .cart-bottom { align-items: stretch; flex-direction: column; }
-  .checkout { width: 100%; }
+.dock-item.active .dock-icon {
+  color: var(--accent);
+  transform: scale(1.15);
+}
+
+.dock-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-soft);
+  transition: color 0.35s ease;
+  letter-spacing: 0.04em;
+}
+
+.dock-item.active .dock-label {
+  color: var(--accent);
 }
 </style>

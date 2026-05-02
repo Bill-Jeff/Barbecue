@@ -44,6 +44,19 @@ CREATE TABLE order_item (
     INDEX idx_order (order_id)
 ) COMMENT '订单明细';
 
+-- 用户表
+CREATE TABLE user (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '账号',
+    password VARCHAR(100) NOT NULL COMMENT '密码(BCrypt)',
+    nickname VARCHAR(50) DEFAULT '' COMMENT '昵称',
+    role VARCHAR(20) DEFAULT 'admin' COMMENT '角色 admin/user',
+    status TINYINT DEFAULT 1 COMMENT '状态 1启用 0禁用',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+) COMMENT '管理员';
+
+-- 默认管理员由应用启动时自动创建, 账号: admin 密码: 123456
+
 -- 示例数据
 INSERT INTO category (name, sort_order) VALUES
 ('烤串', 1),

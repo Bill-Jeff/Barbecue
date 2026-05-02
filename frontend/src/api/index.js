@@ -83,3 +83,17 @@ export function adminUpload(file) {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
+
+// ========== 用户管理 ==========
+
+export function adminListUsers() {
+  return api.get('/admin/users')
+}
+
+export function adminSaveUser(data) {
+  return api.post('/admin/users', data)
+}
+
+export function adminDeleteUser(id) {
+  return api.delete(`/admin/users/${id}`)
+}

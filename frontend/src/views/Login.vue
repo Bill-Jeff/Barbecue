@@ -1,10 +1,16 @@
 <template>
   <div class="login-page">
+    <div class="ember-bg">
+      <div class="ember-orb ember-orb--1"></div>
+      <div class="ember-orb ember-orb--2"></div>
+      <div class="ember-orb ember-orb--3"></div>
+    </div>
+
     <div class="login-card">
       <div class="login-header">
         <div class="login-icon">🔥</div>
-        <h2>店铺管理登录</h2>
-        <p>请输入管理员账号密码</p>
+        <h2>账号登录</h2>
+        <p>请输入您的账号密码</p>
       </div>
 
       <div class="login-form">
@@ -27,7 +33,10 @@
           />
         </div>
 
-        <div class="error-msg" v-if="errorMsg">{{ errorMsg }}</div>
+        <div class="error-msg" v-if="errorMsg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          {{ errorMsg }}
+        </div>
 
         <button
           class="login-btn"
@@ -66,7 +75,10 @@ async function handleLogin() {
     const res = await adminLogin(username.value, password.value)
     if (res.data.code === 200) {
       localStorage.setItem('token', res.data.token)
-      const redirect = router.currentRoute.value.query.redirect || '/m-admin'
+      localStorage.setItem('role', res.data.role)
+      localStorage.setItem('nickname', res.data.nickname || '')
+      const redirect = router.currentRoute.value.query.redirect
+        || (res.data.role === 'admin' ? '/m-admin' : '/')
       router.replace(redirect)
     } else {
       errorMsg.value = res.data.message || '登录失败'
@@ -86,125 +98,170 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background:
-    radial-gradient(circle at top right, rgba(255, 216, 168, 0.9), transparent 30%),
-    radial-gradient(circle at left 20%, rgba(201, 79, 45, 0.16), transparent 24%),
-    linear-gradient(180deg, #fff4e9 0%, #f6eadb 45%, #eed9c6 100%);
-  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating ember orbs */
+.ember-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.ember-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+.ember-orb--1 {
+  width: 200px;
+  height: 200px;
+  background: rgba(232, 98, 44, 0.12);
+  top: 10%;
+  right: -30%;
+  animation: float-1 8s ease-in-out infinite;
+}
+.ember-orb--2 {
+  width: 150px;
+  height: 150px;
+  background: rgba(240, 168, 48, 0.1);
+  bottom: 20%;
+  left: -20%;
+  animation: float-2 10s ease-in-out infinite;
+}
+.ember-orb--3 {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 78, 32, 0.08);
+  top: 60%;
+  right: 10%;
+  animation: float-1 12s ease-in-out infinite reverse;
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, 30px); }
+}
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -20px); }
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 380px;
-  background: rgba(255, 248, 239, 0.95);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
   border-radius: 28px;
-  padding: 36px 28px;
-  box-shadow: 0 18px 40px rgba(94, 44, 20, 0.15);
-  backdrop-filter: blur(8px);
+  padding: 40px 28px;
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
   text-align: center;
+  animation: rise-in 0.6s ease-out both;
 }
 
 .login-header {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
-
 .login-icon {
   font-size: 48px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 12px rgba(232, 98, 44, 0.4));
 }
-
 .login-header h2 {
   margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #2b180f;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-bright);
 }
-
 .login-header p {
   margin: 0;
   font-size: 13px;
-  color: #7e5f4d;
+  color: var(--muted-soft);
 }
 
 .login-form {
   text-align: left;
 }
-
 .input-group {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
-
 .input-group label {
   display: block;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #7e5f4d;
-  margin-bottom: 6px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
-
 .input-group input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid rgba(125, 73, 39, 0.12);
+  padding: 14px 16px;
+  border: 1px solid var(--line-bright);
   border-radius: 14px;
   font-size: 15px;
-  background: #fff;
-  color: #2b180f;
+  background: #faf8f6;
+  color: var(--text);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
-
 .input-group input:focus {
-  border-color: #c94f2d;
-  box-shadow: 0 0 0 3px rgba(201, 79, 45, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232, 98, 44, 0.1);
+  background: #fff;
 }
-
 .input-group input::placeholder {
-  color: #c4b5a5;
+  color: var(--muted-soft);
 }
 
 .error-msg {
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  background: #fff2f0;
-  border: 1px solid #ffccc7;
-  border-radius: 10px;
-  color: #cf1322;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  background: rgba(255, 78, 32, 0.06);
+  border: 1px solid rgba(255, 78, 32, 0.12);
+  border-radius: 12px;
+  color: var(--ember);
   font-size: 13px;
 }
 
 .login-btn {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   border: none;
   border-radius: 16px;
-  background: linear-gradient(135deg, #c94f2d, #de7743);
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
   color: #fff;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 10px 18px rgba(201, 79, 45, 0.22);
+  box-shadow: 0 12px 32px rgba(232, 98, 44, 0.3);
   transition: transform 0.15s, opacity 0.15s;
+  letter-spacing: 0.1em;
 }
-
-.login-btn:active {
-  transform: scale(0.97);
-}
-
-.login-btn.loading {
-  opacity: 0.7;
-}
+.login-btn:active { transform: scale(0.97); }
+.login-btn.loading { opacity: 0.6; }
 
 .back-link {
   display: inline-block;
-  margin-top: 20px;
+  margin-top: 24px;
   font-size: 13px;
-  color: #7e5f4d;
+  color: var(--muted-soft);
   text-decoration: none;
+  transition: color 0.2s;
 }
+.back-link:hover { color: var(--text); }
 
-.back-link:hover {
-  color: #c94f2d;
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
