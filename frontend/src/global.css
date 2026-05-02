@@ -1,21 +1,31 @@
 :root {
-  --bg: #f6eadb;
-  --surface: rgba(255, 248, 239, 0.92);
-  --surface-strong: #fff6ec;
-  --text: #2b180f;
-  --muted: #7e5f4d;
-  --accent: #c94f2d;
-  --accent-deep: #8f2f18;
-  --accent-soft: #ffd2b3;
-  --gold: #f0b04f;
-  --line: rgba(90, 42, 20, 0.12);
-  --shadow: 0 18px 40px rgba(94, 44, 20, 0.15);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 18px;
-  --radius-sm: 14px;
-  --font-display: "STKaiti", "KaiTi", "Microsoft YaHei", sans-serif;
-  --font-body: "Microsoft YaHei", "PingFang SC", sans-serif;
+  --bg: #ffffff;
+  --bg-warm: #ffffff;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-glass: rgba(0, 0, 0, 0.02);
+  --text: #1a1a1a;
+  --text-bright: #000000;
+  --muted: #999999;
+  --muted-soft: rgba(153, 153, 153, 0.5);
+  --accent: #e8622c;
+  --accent-bright: #ff7a3d;
+  --accent-deep: #c44a1a;
+  --accent-soft: rgba(232, 98, 44, 0.06);
+  --gold: #f0a830;
+  --gold-soft: rgba(240, 168, 48, 0.06);
+  --ember: #ff4e20;
+  --line: rgba(0, 0, 0, 0.06);
+  --line-bright: rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 40px rgba(232, 98, 44, 0.04);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --font-display: "ZCOOL KuaiLe", "STKaiti", cursive;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 * {
@@ -33,33 +43,124 @@ body {
   min-height: 100vh;
   font-family: var(--font-body);
   color: var(--text);
-  background:
-    radial-gradient(circle at top right, rgba(255, 216, 168, 0.9), transparent 30%),
-    radial-gradient(circle at left 20%, rgba(201, 79, 45, 0.16), transparent 24%),
-    linear-gradient(180deg, #fff4e9 0%, var(--bg) 45%, #eed9c6 100%);
-  background-attachment: fixed;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-input, button {
+input, button, textarea {
   font-family: inherit;
+  color: inherit;
 }
 
 ::-webkit-scrollbar {
   display: none;
 }
 
+/* ===== Animations ===== */
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes float-up {
-  from { opacity: 0; transform: translate(-50%, 18px); }
+  from { opacity: 0; transform: translate(-50%, 24px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @keyframes pop {
   0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ember-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes smoke-drift {
+  0% { transform: translateY(0) scale(1); opacity: 0.4; }
+  100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+}
+
+/* ===== Vant overrides ===== */
+.van-nav-bar {
+  background: transparent !important;
+}
+.van-nav-bar__title {
+  color: var(--text-bright) !important;
+  font-weight: 700 !important;
+}
+.van-nav-bar__arrow {
+  color: var(--text) !important;
+}
+
+.van-tabs__wrap {
+  background: var(--bg-warm) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+.van-tab {
+  color: var(--muted) !important;
+}
+.van-tab--active {
+  color: var(--accent) !important;
+}
+
+.van-cell-group--inset {
+  background: var(--surface-raised) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+.van-cell {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+.van-cell::after {
+  border-color: var(--line) !important;
+}
+.van-cell__title {
+  color: var(--text) !important;
+}
+.van-cell__value {
+  color: var(--muted) !important;
+}
+
+.van-field__label {
+  color: var(--muted) !important;
+}
+.van-field__control {
+  color: var(--text) !important;
+}
+
+.van-action-sheet {
+  background: var(--bg-warm) !important;
+}
+.van-action-sheet__header {
+  color: var(--text-bright) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.van-radio__label {
+  color: var(--text) !important;
+}
+
+.van-empty__description {
+  color: var(--muted) !important;
+}
+
+.van-tag--default {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--muted) !important;
 }
