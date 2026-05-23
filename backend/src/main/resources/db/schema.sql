@@ -79,3 +79,14 @@ INSERT INTO product (category_id, name, price, description, sort_order) VALUES
 (4, '啤酒', 8.00, '冰镇青岛啤酒', 1),
 (4, '王老吉', 5.00, '怕上火喝王老吉', 2),
 (4, '酸梅汤', 6.00, '自制酸梅汤', 3);
+
+
+CREATE TABLE flash_sale (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id BIGINT NOT NULL COMMENT '菜品ID',
+    price DECIMAL(10,2) NOT NULL COMMENT '秒杀价',
+    count INT NOT NULL DEFAULT 0 COMMENT '库存',
+    sale_time DATETIME NOT NULL COMMENT '秒杀结束时间',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_product (product_id)
+) COMMENT '秒杀活动';

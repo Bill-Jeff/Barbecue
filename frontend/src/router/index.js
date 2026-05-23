@@ -23,6 +23,11 @@ const routes = [
     component: () => import('../views/MobileAdmin.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/flash-sale',
+    name: 'FlashSale',
+    component: () => import('../views/FlashSale.vue'),
+  },
 ]
 
 const router = createRouter({

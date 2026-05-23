@@ -89,6 +89,36 @@
           </div>
         </div>
       </van-tab>
+
+      <!-- ===== 活动管理 ===== -->
+      <van-tab title="活动管理">
+        <div class="tab-body">
+          <div class="simple-list">
+            <div class="simple-item" v-for="fs in flashSales" :key="fs.id">
+              <div class="user-row" @click="openFlashEditor(fs)">
+                <div class="user-avatar flash-avatar">⚡</div>
+                <div class="user-info">
+                  <div class="user-name">
+                    {{ fs.productName || '未知菜品' }}
+                    <span v-if="isFlashExpired(fs)" class="role-badge role-badge--off">已过期</span>
+                    <span v-else class="role-badge role-badge--active">进行中</span>
+                  </div>
+                  <div class="user-meta">
+                    ¥{{ Number(fs.price).toFixed(2) }} / 库存 {{ fs.count }} / {{ formatTime(fs.saleTime) }}截止
+                  </div>
+                </div>
+              </div>
+              <button class="action-btn action--danger" @click="confirmDeleteFlash(fs)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="flashSales.length === 0" class="empty-tab">
+            <p>暂无秒杀活动</p>
+          </div>
+        </div>
+      </van-tab>
     </van-tabs>
 
     <!-- 悬浮新增按钮 -->
@@ -181,11 +211,72 @@
         </div>
       </div>
     </van-action-sheet>
+
+    <!-- ===== 秒杀编辑弹窗 ===== -->
+    <van-action-sheet v-model:show="showFlash" title="编辑秒杀活动" :close-on-click-overlay="false">
+      <div class="sheet-body">
+        <van-cell-group inset>
+          <van-field v-model="flashSaleForm.productName" label="菜品" readonly is-link placeholder="点击选择菜品" @click="showProductPicker = true" />
+          <van-field v-model.number="flashSaleForm.price" label="秒杀价" type="number" placeholder="0.00">
+            <template #button><span style="color: var(--muted-soft);">元</span></template>
+          </van-field>
+          <van-field v-model.number="flashSaleForm.count" label="库存" type="digit" placeholder="0" />
+          <van-field v-model="flashSaleForm.saleTimeStr" label="截止时间" readonly is-link placeholder="点击选择时间" @click="showDatetimePicker = true" />
+        </van-cell-group>
+        <div class="sheet-footer">
+          <van-button block round type="primary" color="linear-gradient(135deg, #e8622c, #ff7a3d)" @click="saveFlashSale">保存</van-button>
+        </div>
+      </div>
+    </van-action-sheet>
+
+    <!-- 选择菜品 -->
+    <van-action-sheet v-model:show="showProductPicker" title="选择菜品">
+      <div class="picker-body">
+        <div
+          v-for="p in products"
+          :key="p.id"
+          class="picker-item"
+          :class="{ selected: flashSaleForm.productId === p.id }"
+          @click="selectProduct(p)"
+        >
+          <span>{{ p.name }}</span>
+          <span class="picker-price">¥{{ Number(p.price).toFixed(2) }}</span>
+          <svg v-if="flashSaleForm.productId === p.id" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8622c" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+    </van-action-sheet>
+
   </div>
+
+  <!-- 时间选择器：DatePicker + TimePicker -->
+  <van-popup v-model:show="showDatetimePicker" position="bottom" round :overlay-style="{ zIndex: 3100 }" :style="{ zIndex: 3101 }">
+    <div class="datetime-picker-wrap">
+      <div class="datetime-title">选择截止时间</div>
+      <div class="picker-row">
+        <van-date-picker
+          v-if="showDatetimePicker"
+          v-model="pickerDate"
+          :min-date="minDate"
+          title="日期"
+          class="inline-picker"
+        />
+        <van-time-picker
+          v-if="showDatetimePicker"
+          v-model="pickerTime"
+          title="时间"
+          class="inline-picker"
+        />
+      </div>
+      <div class="picker-actions">
+        <van-button size="small" plain round @click="showDatetimePicker = false">取消</van-button>
+        <van-button size="small" round type="primary" color="linear-gradient(135deg, #e8622c, #ff7a3d)" @click="confirmDatetime">确认</van-button>
+      </div>
+    </div>
+  </van-popup>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showConfirmDialog, showToast } from 'vant'
 import {
@@ -193,6 +284,7 @@ import {
   adminListCategories, adminSaveCategory, adminDeleteCategory,
   adminListUsers, adminSaveUser, adminDeleteUser,
   adminUpload,
+  adminListFlashSales, adminSaveFlashSale, adminDeleteFlashSale,
 } from '../api'
 
 const router = useRouter()
@@ -215,10 +307,14 @@ function getCategoryName(id) {
 }
 
 async function loadAll() {
-  const [pRes, cRes, uRes] = await Promise.all([adminListProducts(), adminListCategories(), adminListUsers()])
+  const [pRes, cRes, uRes, fsRes] = await Promise.all([
+    adminListProducts(), adminListCategories(), adminListUsers(),
+    adminListFlashSales().catch(() => ({ data: [] })),
+  ])
   products.value = pRes.data
   categories.value = cRes.data
   users.value = uRes.data
+  flashSales.value = fsRes.data
 }
 onMounted(loadAll)
 
@@ -339,11 +435,121 @@ function confirmDeleteUser(u) {
     .catch(() => {})
 }
 
+// ===== 秒杀活动 CRUD =====
+const flashSales = ref([])
+const showFlash = ref(false)
+const showProductPicker = ref(false)
+const showDatetimePicker = ref(false)
+
+function getNowDate() {
+  const d = new Date()
+  return [String(d.getFullYear()), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')]
+}
+
+function getNowTime() {
+  const d = new Date()
+  return [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')]
+}
+
+function dateToPickerVal(d) {
+  return [String(d.getFullYear()), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')]
+}
+
+function timeToPickerVal(d) {
+  return [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')]
+}
+
+const pickerDate = ref(getNowDate())
+const pickerTime = ref(getNowTime())
+const minDate = new Date(2020, 0, 1)
+
+const flashSaleForm = reactive({
+  id: null, productId: null, productName: '', price: 0, count: 0, saleTime: '', saleTimeStr: '',
+})
+
+function formatTime(t) {
+  if (!t) return ''
+  const d = new Date(t)
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function isFlashExpired(fs) {
+  return new Date(fs.saleTime) <= new Date()
+}
+
+function openFlashEditor(fs) {
+  if (fs) {
+    const d = new Date(fs.saleTime)
+    pickerDate.value = dateToPickerVal(d)
+    pickerTime.value = timeToPickerVal(d)
+    Object.assign(flashSaleForm, {
+      ...fs,
+      saleTimeStr: formatTime(fs.saleTime),
+    })
+  } else {
+    pickerDate.value = getNowDate()
+    pickerTime.value = getNowTime()
+    Object.assign(flashSaleForm, {
+      id: null, productId: null, productName: '', price: 0, count: 0, saleTime: '', saleTimeStr: '',
+    })
+  }
+  showFlash.value = true
+}
+
+function selectProduct(p) {
+  flashSaleForm.productId = p.id
+  flashSaleForm.productName = p.name
+  flashSaleForm.price = Number(p.price)
+  showProductPicker.value = false
+}
+
+function confirmDatetime() {
+  const [y, m, d] = pickerDate.value
+  const [h, min] = pickerTime.value
+  const dt = new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min))
+  flashSaleForm.saleTime = dt.toISOString()
+  flashSaleForm.saleTimeStr = formatTime(dt.toISOString())
+  showDatetimePicker.value = false
+}
+
+async function saveFlashSale() {
+  if (!flashSaleForm.productId) { showToast('请选择菜品'); return }
+  if (!flashSaleForm.price) { showToast('请输入秒杀价'); return }
+  if (!flashSaleForm.count) { showToast('请输入库存'); return }
+  if (!flashSaleForm.saleTime) { showToast('请选择截止时间'); return }
+  await adminSaveFlashSale({
+    id: flashSaleForm.id,
+    productId: flashSaleForm.productId,
+    price: flashSaleForm.price,
+    count: flashSaleForm.count,
+    saleTime: flashSaleForm.saleTime,
+  })
+  showFlash.value = false
+  showToast('保存成功')
+  await loadFlashSales()
+}
+
+function confirmDeleteFlash(fs) {
+  showConfirmDialog({ title: '确认删除', message: `确定删除「${fs.productName}」的秒杀活动吗？` })
+    .then(async () => {
+      await adminDeleteFlashSale(fs.id)
+      showToast('已删除')
+      await loadFlashSales()
+    })
+    .catch(() => {})
+}
+
+async function loadFlashSales() {
+  const res = await adminListFlashSales()
+  flashSales.value = res.data
+}
+
 // ===== FAB 按钮 =====
 function fabClick() {
   if (tab.value === 0) openProductEditor()
   else if (tab.value === 1) openCategoryEditor()
-  else openUserEditor()
+  else if (tab.value === 2) openUserEditor()
+  else openFlashEditor()
 }
 </script>
 
@@ -527,6 +733,14 @@ function fabClick() {
   background: rgba(168, 149, 133, 0.1);
   color: var(--muted);
 }
+.role-badge--active {
+  background: rgba(76, 175, 80, 0.12);
+  color: #66bb6a;
+}
+.role-badge--off {
+  background: rgba(255, 152, 0, 0.12);
+  color: #ff9800;
+}
 
 /* Empty state */
 .empty-tab {
@@ -586,6 +800,59 @@ function fabClick() {
   color: var(--muted-soft);
   font-size: 11px;
 }
+
+/* Datetime picker */
+.datetime-picker-wrap {
+  padding: 16px 0;
+}
+.datetime-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+  padding: 0 16px 12px;
+}
+.picker-row {
+  display: flex;
+  gap: 0;
+}
+.inline-picker {
+  flex: 1;
+  min-height: 240px;
+}
+.picker-actions {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* Flash avatar */
+.flash-avatar {
+  background: linear-gradient(135deg, #ff4e20, #ff7a3d) !important;
+  font-size: 16px !important;
+}
+
+/* Picker */
+.picker-body {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.picker-item:active { background: var(--surface-glass); }
+.picker-item.selected { background: rgba(232, 98, 44, 0.06); }
+.picker-item span:first-child { flex: 1; font-weight: 500; }
+.picker-price { color: var(--muted-soft); font-size: 13px; }
 
 /* FAB */
 .fab {

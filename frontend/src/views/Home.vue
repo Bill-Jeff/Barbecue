@@ -34,6 +34,22 @@
         </div>
       </section>
 
+      <!-- 秒杀入口 -->
+      <div class="flash-entry" :class="{ 'flash-entry--empty': !flashSale }" @click="flashSale && router.push('/flash-sale')">
+        <div class="flash-entry-left">
+          <div class="flash-entry-icon">⚡</div>
+          <div class="flash-entry-info">
+            <span class="flash-entry-title">限时秒杀</span>
+            <span class="flash-entry-countdown" v-if="flashSale">{{ flashEntryCountdown }}</span>
+            <span class="flash-entry-countdown flash-countdown-empty" v-else>暂无活动</span>
+          </div>
+        </div>
+        <div class="flash-entry-right" v-if="flashSale">
+          <span class="flash-entry-price">¥{{ Number(flashSale.price).toFixed(0) }}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
       <!-- 分类 -->
       <div class="section-title">
         <h2>招牌分类</h2>
@@ -217,9 +233,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted, onUnmounted, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { getCategories, getProducts } from '../api'
+import { getCategories, getProducts, getFlashSales } from '../api'
 import { useCartStore } from '../stores/cart'
 
 const router = useRouter()
@@ -227,6 +243,9 @@ const cart = useCartStore()
 
 const activeTab = ref(0)
 const activeCategory = ref(null)
+const flashSale = ref(null)
+const flashEntryCountdown = ref('')
+let flashTimer = null
 
 // Dock icons as render functions
 const MenuIcon = () => h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
@@ -349,12 +368,38 @@ function emberStyle(n) {
   }
 }
 
+function updateFlashCountdown() {
+  if (!flashSale.value) return
+  const end = new Date(flashSale.value.saleTime).getTime()
+  const diff = end - Date.now()
+  if (diff <= 0) {
+    flashEntryCountdown.value = '已结束'
+    return
+  }
+  const h = Math.floor(diff / 3600000)
+  const m = Math.floor((diff % 3600000) / 60000)
+  const s = Math.floor((diff % 60000) / 1000)
+  flashEntryCountdown.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
 onMounted(async () => {
-  const [catRes, prodRes] = await Promise.all([getCategories(), getProducts()])
+  const [catRes, prodRes, flashRes] = await Promise.all([
+    getCategories(), getProducts(), getFlashSales().catch(() => ({ data: [] })),
+  ])
   categories.value = catRes.data
   products.value = prodRes.data.list
   if (categories.value.length > 0) activeCategory.value = categories.value[0].id
   loadOrders()
+  // 取最近的秒杀活动
+  if (flashRes.data && flashRes.data.length > 0) {
+    flashSale.value = flashRes.data[0]
+    updateFlashCountdown()
+    flashTimer = setInterval(updateFlashCountdown, 1000)
+  }
+})
+
+onUnmounted(() => {
+  if (flashTimer) clearInterval(flashTimer)
 })
 </script>
 
@@ -502,6 +547,75 @@ onMounted(async () => {
   width: 1px;
   height: 32px;
   background: var(--line);
+}
+
+/* ===== Flash sale entry ===== */
+.flash-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #fff5f0, #fff0e8);
+  border: 1px solid rgba(255, 78, 32, 0.2);
+  cursor: pointer;
+  animation: rise-in 0.6s ease both;
+  transition: transform 0.15s;
+}
+.flash-entry:active { transform: scale(0.98); }
+.flash-entry--empty {
+  opacity: 0.6;
+  cursor: default;
+}
+.flash-countdown-empty {
+  color: var(--muted-soft);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.flash-entry-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.flash-entry-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4e20, #ff7a3d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(255, 78, 32, 0.35);
+}
+.flash-entry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.flash-entry-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-bright);
+}
+.flash-entry-countdown {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ember);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.flash-entry-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ember);
+}
+.flash-entry-price {
+  font-size: 18px;
+  font-weight: 900;
 }
 
 /* ===== Section title ===== */

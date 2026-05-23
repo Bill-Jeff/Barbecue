@@ -97,3 +97,21 @@ export function adminSaveUser(data) {
 export function adminDeleteUser(id) {
   return api.delete(`/admin/users/${id}`)
 }
+
+// ========== 秒杀活动 ==========
+
+export function getFlashSales() {
+  return api.get('/flash-sales')
+}
+
+export function adminListFlashSales() {
+  return api.get('/admin/flash-sales')
+}
+
+export function adminSaveFlashSale(data) {
+  return api.post('/admin/flash-sales', data)
+}
+
+export function adminDeleteFlashSale(id) {
+  return api.delete(`/admin/flash-sales/${id}`)
+}
