@@ -73,18 +73,15 @@ async function handleLogin() {
   logging.value = true
   try {
     const res = await adminLogin(username.value, password.value)
-    if (res.data.code === 200) {
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', res.data.role)
-      localStorage.setItem('nickname', res.data.nickname || '')
-      const redirect = router.currentRoute.value.query.redirect
-        || (res.data.role === 'admin' ? '/m-admin' : '/')
-      router.replace(redirect)
-    } else {
-      errorMsg.value = res.data.message || '登录失败'
-    }
+    const d = res.data
+    localStorage.setItem('token', d.token)
+    localStorage.setItem('role', d.role)
+    localStorage.setItem('nickname', d.nickname || '')
+    const redirect = router.currentRoute.value.query.redirect
+      || (d.role === 'admin' ? '/m-admin' : '/')
+    router.replace(redirect)
   } catch {
-    errorMsg.value = '网络错误，请重试'
+    errorMsg.value = '登录失败，账号或密码错误'
   } finally {
     logging.value = false
   }

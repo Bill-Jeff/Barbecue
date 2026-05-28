@@ -309,7 +309,7 @@ function getCategoryName(id) {
 async function loadAll() {
   const [pRes, cRes, uRes, fsRes] = await Promise.all([
     adminListProducts(), adminListCategories(), adminListUsers(),
-    adminListFlashSales().catch(() => ({ data: [] })),
+    adminListFlashSales().catch(() => ({ data: { data: [] } })),
   ])
   products.value = pRes.data
   categories.value = cRes.data

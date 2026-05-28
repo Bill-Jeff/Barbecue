@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { showToast } from 'vant'
 
 const api = axios.create({
   baseURL: '/api',
@@ -14,14 +15,38 @@ api.interceptors.request.use(config => {
   return config
 })
 
-// 响应拦截器：401 跳登录
+function toastError(msg) {
+  showToast({
+    message: msg,
+    icon: 'warning-o',
+    className: 'toast-error',
+    duration: 2000,
+  })
+}
+
+// 响应拦截器：Result 解包 + 异常处理
 api.interceptors.response.use(
-  res => res,
+  res => {
+    const body = res.data
+    if (body && typeof body.code === 'number') {
+      if (body.code === 200) {
+        res.data = body.data
+        res.code = body.code
+        return res
+      }
+      toastError(body.message)
+      return Promise.reject(new Error(body.message))
+    }
+    return res
+  },
   err => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
+      return Promise.reject(err)
     }
+    const msg = err.response?.data?.message || err.message || '请求失败'
+    toastError(msg)
     return Promise.reject(err)
   }
 )

@@ -384,7 +384,7 @@ function updateFlashCountdown() {
 
 onMounted(async () => {
   const [catRes, prodRes, flashRes] = await Promise.all([
-    getCategories(), getProducts(), getFlashSales().catch(() => ({ data: [] })),
+    getCategories(), getProducts(), getFlashSales().catch(() => ({ data: { data: [] } })),
   ])
   categories.value = catRes.data
   products.value = prodRes.data.list

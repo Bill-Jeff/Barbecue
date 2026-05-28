@@ -1,5 +1,6 @@
 package com.shaokao.controller;
 
+import com.shaokao.config.Result;
 import com.shaokao.entity.Category;
 import com.shaokao.entity.Product;
 import com.shaokao.service.ProductService;
@@ -25,55 +26,45 @@ public class AdminController {
     // ========== 分类管理 ==========
 
     @GetMapping("/categories")
-    public List<Category> listCategories() {
-        return productService.listCategories();
+    public Result<List<Category>> listCategories() {
+        return Result.success(productService.listCategories());
     }
 
     @PostMapping("/categories")
-    public Map<String, Object> saveCategory(@RequestBody Category category) {
+    public Result<Void> saveCategory(@RequestBody Category category) {
         productService.saveCategory(category);
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", category.getId());
-        result.put("message", "保存成功");
-        return result;
+        return Result.success();
     }
 
     @DeleteMapping("/categories/{id}")
-    public Map<String, Object> deleteCategory(@PathVariable Long id) {
+    public Result<Void> deleteCategory(@PathVariable Long id) {
         productService.deleteCategory(id);
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "删除成功");
-        return result;
+        return Result.success();
     }
 
     // ========== 菜品管理 ==========
 
     @GetMapping("/products")
-    public List<Product> listAllProducts() {
-        return productService.listAllProducts();
+    public Result<List<Product>> listAllProducts() {
+        return Result.success(productService.listAllProducts());
     }
 
     @PostMapping("/products")
-    public Map<String, Object> saveProduct(@RequestBody Product product) {
+    public Result<Void> saveProduct(@RequestBody Product product) {
         productService.saveProduct(product);
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", product.getId());
-        result.put("message", "保存成功");
-        return result;
+        return Result.success();
     }
 
     @DeleteMapping("/products/{id}")
-    public Map<String, Object> deleteProduct(@PathVariable Long id) {
+    public Result<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "删除成功");
-        return result;
+        return Result.success();
     }
 
     // ========== 图片上传 ==========
 
     @PostMapping("/upload")
-    public Map<String, Object> upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result<Map<String, String>> upload(@RequestParam("file") MultipartFile file) throws IOException {
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) dir.mkdirs();
 
@@ -86,8 +77,6 @@ public class AdminController {
         Path path = Paths.get(UPLOAD_DIR, fileName);
         Files.write(path, file.getBytes());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("url", "/uploads/" + fileName);
-        return result;
+        return Result.success(Map.of("url", "/uploads/" + fileName));
     }
 }
